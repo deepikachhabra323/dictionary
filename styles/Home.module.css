@@ -4,11 +4,11 @@
 
 .main {
   min-height: 100vh;
-  padding: 4rem 0;
+  padding: 1rem 0;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: center;
 }
 
@@ -113,4 +113,12 @@
     width: 100%;
     flex-direction: column;
   }
+}
+.search {
+  width: 500px;
+  padding: 8px;
+  border-radius: 6px;
+  border-color: lightgrey;
+  border-style: solid;
+  margin: 10px;
 }

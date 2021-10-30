@@ -12,40 +12,59 @@ var endpoint = "https://api.cognitive.microsofttranslator.com";
 var location = "southeastasia";
 export default function Home() {
   let [word, setWord] = useState("");
-  let [results, setResults] = useState([]);
-  let [translation, setTranslation] = useState('');
+  let [results, setResults] = useState({});
+  let [translations, setTranslation] = useState({});
+  const callApi = (single,cb,cb2)=>{
+    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${single}`).then(
+          async (res) => {
+            let result = await res.json();
+            console.log(result);
+            // result = await result
+            cb(result)
+          }
+        );
+        axios({
+          baseURL: endpoint,
+          url: '/translate',
+          method: 'post',
+          headers: {
+              'Ocp-Apim-Subscription-Key': subscriptionKey,
+              'Ocp-Apim-Subscription-Region': location,
+              'Content-type': 'application/json',
+              'X-ClientTraceId': uuidv4().toString()
+          },
+          params: {
+              'api-version': '3.0',
+              'from': 'en',
+              'to': ['hi']
+          },
+          data: [{
+              'text': single
+          }],
+          responseType: 'json'
+        }).then(function(response){
+          cb2(response.data[0].translations[0].text);
+            console.log(response.data,response.data[0].translations[0].text);
+        })
+  }
   const getResults = () => {
-    console.log(word);
-    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`).then(
-      async (res) => {
-        let result = await res.json();
-        console.log(result);
-        setResults(result);
+    let words = word.split(',');
+    let results = {},translations = {};
+    words.map(single=>{
+      if(!results[single]){
+        results[single] = [];
+        callApi(single,(result)=>{
+          results = {...results,[single]:result}
+          setResults({...results});
+        },
+        (tr)=>{
+          translations[single] = tr;
+          setTranslation(translations)
+        })
+        
       }
-    );
-    axios({
-      baseURL: endpoint,
-      url: '/translate',
-      method: 'post',
-      headers: {
-          'Ocp-Apim-Subscription-Key': subscriptionKey,
-          'Ocp-Apim-Subscription-Region': location,
-          'Content-type': 'application/json',
-          'X-ClientTraceId': uuidv4().toString()
-      },
-      params: {
-          'api-version': '3.0',
-          'from': 'en',
-          'to': ['hi']
-      },
-      data: [{
-          'text': word
-      }],
-      responseType: 'json'
-    }).then(function(response){
-      setTranslation(response.data[0].translations[0].text);
-        console.log(response.data,response.data[0].translations[0].text);
     })
+    setResults({...results});
   };
   return (
     <div className={styles.container}>
@@ -61,19 +80,23 @@ export default function Home() {
           onChange={(e) => {
             setWord(e.target.value);
           }}
+          className={styles.search}
           value={word}
           placeholder="type here"
         />
         <button onClick={getResults}>Search</button>
 
         <h3>Result:</h3>
-        <div>
-          {[results[0]].map((res,i) => {
+        <div style={{maxWidth:'900px'}}>
+          {Object.keys(results).map((r,i) => {
+            let res = results[r][0];
+            let word = r
+            // debugger
             return (
-              <div key={i} style={{display:'flex'}}>
-                <div style={{padding:'0 50px'}}>
+              <><div key={i} style={{display:'flex'}}>
+                <div style={{padding:'0 50px',minWidth:'200px'}}>
                   <div style={{textTransform:'uppercase'}}><b>{word}</b></div>
-                  <div>{translation}</div>
+                  <div>{translations[word]}</div>
                 </div>
                 <div>{res?.meanings.map((meaning,i) => {
                   return (
@@ -89,6 +112,10 @@ export default function Home() {
                 })}
                 </div>
               </div>
+              <br/>
+              <br/>
+              <br/>
+              </>
             );
           })}
         </div>
