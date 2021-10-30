@@ -1,10 +1,19 @@
 import Head from "next/head";
 import { useState } from "react";
 import styles from "../styles/Home.module.css";
+const { v4: uuidv4 } = require('uuid');
+const axios = require('axios').default;
 
+var subscriptionKey = "bf400f67a2364b5f8a289cdc4c39ee40";
+var endpoint = "https://api.cognitive.microsofttranslator.com";
+
+// Add your location, also known as region. The default is global.
+// This is required if using a Cognitive Services resource.
+var location = "southeastasia";
 export default function Home() {
   let [word, setWord] = useState("");
   let [results, setResults] = useState([]);
+  let [translation, setTranslation] = useState('');
   const getResults = () => {
     console.log(word);
     fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`).then(
@@ -14,6 +23,29 @@ export default function Home() {
         setResults(result);
       }
     );
+    axios({
+      baseURL: endpoint,
+      url: '/translate',
+      method: 'post',
+      headers: {
+          'Ocp-Apim-Subscription-Key': subscriptionKey,
+          'Ocp-Apim-Subscription-Region': location,
+          'Content-type': 'application/json',
+          'X-ClientTraceId': uuidv4().toString()
+      },
+      params: {
+          'api-version': '3.0',
+          'from': 'en',
+          'to': ['hi']
+      },
+      data: [{
+          'text': word
+      }],
+      responseType: 'json'
+    }).then(function(response){
+      setTranslation(response.data[0].translations[0].text);
+        console.log(response.data,response.data[0].translations[0].text);
+    })
   };
   return (
     <div className={styles.container}>
@@ -36,22 +68,25 @@ export default function Home() {
 
         <h3>Result:</h3>
         <div>
-          {results.map((res) => {
+          {results.map((res,i) => {
             return (
-              <>
-                <div style={{textTransform:'uppercase'}}><b>{res.word}</b></div><br/><br/>
+              <div key={i}>
+                <div style={{textTransform:'uppercase'}}><b>{res.word}</b></div>
+                <div>{translation}</div>
+                <br/><br/>
                 {res.meanings.map((meaning) => {
                   return (
                     <>
                       ({meaning.partOfSpeech}) &nbsp;                
                       <span>{meaning.definitions[0].definition}</span><br/>
-                      <em><small>example: {meaning.definitions[0].example}</small></em><br/><br/>
-                      {meaning.definitions[0].synonyms.length ? <><em><small>synonyms: {meaning.definitions[0].synonyms.join(',')}</small></em><br/><br/></>:null}
-                      {meaning.definitions[0].antonyms.length ? <><em><small>antonyms: {meaning.definitions[0].antonyms.join(',')}</small></em><br/><br/></>:null}
+                      <em><small>example: {meaning.definitions[0].example}</small></em><br/>
+                      {meaning.definitions[0].synonyms.length ? <><em><small>synonyms: {meaning.definitions[0].synonyms.join(',')}</small></em><br/></>:null}
+                      {meaning.definitions[0].antonyms.length ? <><em><small>antonyms: {meaning.definitions[0].antonyms.join(',')}</small></em><br/></>:null}
+                      <br/>
                     </>
                   );
                 })}
-              </>
+              </div>
             );
           })}
         </div>
