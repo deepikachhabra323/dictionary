@@ -75,9 +75,9 @@ export default function Home() {
                   <div style={{textTransform:'uppercase'}}><b>{word}</b></div>
                   <div>{translation}</div>
                 </div>
-                <div>{res?.meanings.map((meaning) => {
+                <div>{res?.meanings.map((meaning,i) => {
                   return (
-                    <div>
+                    <div key={`results${i}`}>
                       ({meaning.partOfSpeech}) &nbsp;                
                       <span>{meaning.definitions[0].definition}</span><br/>
                       <em><small>example: {meaning.definitions[0].example}</small></em><br/>
