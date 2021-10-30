@@ -72,7 +72,7 @@ export default function Home() {
             return (
               <div key={i} style={{display:'flex'}}>
                 <div style={{padding:'0 50px'}}>
-                  <div style={{textTransform:'uppercase'}}><b>{res.word}</b></div>
+                  <div style={{textTransform:'uppercase'}}><b>{word}</b></div>
                   <div>{translation}</div>
                 </div>
                 <div>{res.meanings.map((meaning) => {
@@ -81,8 +81,8 @@ export default function Home() {
                       ({meaning.partOfSpeech}) &nbsp;                
                       <span>{meaning.definitions[0].definition}</span><br/>
                       <em><small>example: {meaning.definitions[0].example}</small></em><br/>
-                      {meaning.definitions[0].synonyms.length ? <><em><small>synonyms: {meaning.definitions[0].synonyms.join(',')}</small></em><br/></>:null}
-                      {meaning.definitions[0].antonyms.length ? <><em><small>antonyms: {meaning.definitions[0].antonyms.join(',')}</small></em><br/></>:null}
+                      {meaning.definitions[0].synonyms.length ? <><em><small>synonyms: {meaning.definitions[0].synonyms.slice(0,8).join(',')}</small></em><br/></>:null}
+                      {meaning.definitions[0].antonyms.length ? <><em><small>antonyms: {meaning.definitions[0].antonyms.slice(0,8).join(',')}</small></em><br/></>:null}
                       <br/>
                     </div>
                   );
