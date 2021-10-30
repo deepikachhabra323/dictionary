@@ -68,24 +68,26 @@ export default function Home() {
 
         <h3>Result:</h3>
         <div>
-          {results.map((res,i) => {
+          {[results[0]].map((res,i) => {
             return (
-              <div key={i}>
-                <div style={{textTransform:'uppercase'}}><b>{res.word}</b></div>
-                <div>{translation}</div>
-                <br/><br/>
-                {res.meanings.map((meaning) => {
+              <div key={i} style={{display:'flex'}}>
+                <div style={{padding:'0 50px'}}>
+                  <div style={{textTransform:'uppercase'}}><b>{res.word}</b></div>
+                  <div>{translation}</div>
+                </div>
+                <div>{res.meanings.map((meaning) => {
                   return (
-                    <>
+                    <div>
                       ({meaning.partOfSpeech}) &nbsp;                
                       <span>{meaning.definitions[0].definition}</span><br/>
                       <em><small>example: {meaning.definitions[0].example}</small></em><br/>
                       {meaning.definitions[0].synonyms.length ? <><em><small>synonyms: {meaning.definitions[0].synonyms.join(',')}</small></em><br/></>:null}
                       {meaning.definitions[0].antonyms.length ? <><em><small>antonyms: {meaning.definitions[0].antonyms.join(',')}</small></em><br/></>:null}
                       <br/>
-                    </>
+                    </div>
                   );
                 })}
+                </div>
               </div>
             );
           })}
