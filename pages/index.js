@@ -76,16 +76,17 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Welcome to Word Dictionary!</h1>
-        <input
-          onChange={(e) => {
-            setWord(e.target.value);
-          }}
-          className={styles.search}
-          value={word}
-          placeholder="type here"
-        />
-        <button onClick={getResults}>Search</button>
-
+        <form onSubmit={(e)=>{e.preventDefault();getResults(e)}}>
+          <input
+            onChange={(e) => {
+              setWord(e.target.value);
+            }}
+            className={styles.search}
+            value={word}
+            placeholder="type here"
+          />
+          <button type="submit" >Search</button>
+        </form>
         <h3>Result:</h3>
         <div style={{maxWidth:'900px'}}>
           {Object.keys(results).map((r,i) => {
