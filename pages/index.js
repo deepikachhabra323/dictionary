@@ -1,8 +1,8 @@
 import Head from "next/head";
 import { useState } from "react";
 import styles from "../styles/Home.module.css";
-const { v4: uuidv4 } = require('uuid');
-const axios = require('axios').default;
+const { v4: uuidv4 } = require("uuid");
+const axios = require("axios").default;
 
 var subscriptionKey = "bf400f67a2364b5f8a289cdc4c39ee40";
 var endpoint = "https://api.cognitive.microsofttranslator.com";
@@ -13,58 +13,105 @@ var location = "southeastasia";
 export default function Home() {
   let [word, setWord] = useState("");
   let [results, setResults] = useState({});
+  let [derivations, setDerivations] = useState({});
   let [translations, setTranslation] = useState({});
-  const callApi = (single,cb,cb2)=>{
+
+  const getMeaning = (single,cb) => {
+    //for meaning
     fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${single}`).then(
-          async (res) => {
-            let result = await res.json();
-            console.log(result);
-            // result = await result
-            cb(result)
+      async (res) => {
+        let result = await res.json();
+        console.log(result);
+        // result = await result
+        cb(result);
+      }
+    );
+  }
+
+  const getTranslation = (single,cb2) => {
+    //for translation
+    axios({
+      baseURL: endpoint,
+      url: "/translate",
+      method: "post",
+      headers: {
+        "Ocp-Apim-Subscription-Key": subscriptionKey,
+        "Ocp-Apim-Subscription-Region": location,
+        "Content-type": "application/json",
+        "X-ClientTraceId": uuidv4().toString(),
+      },
+      params: {
+        "api-version": "3.0",
+        from: "en",
+        to: ["hi"],
+      },
+      data: [
+        {
+          text: single,
+        },
+      ],
+      responseType: "json",
+    }).then(function (response) {
+      cb2(response.data[0].translations[0].text);
+      console.log(response.data, response.data[0].translations[0].text);
+    });
+  }
+  const callApi = (single, cb, cb2) => {
+    
+    getMeaning(single,cb)
+    getTranslation(single,cb2)
+    //for derivatives
+    axios({
+      method: 'GET',
+      url: `https://wordsapiv1.p.rapidapi.com/words/${single}`,
+      headers: {
+        'x-rapidapi-host': 'wordsapiv1.p.rapidapi.com',
+        'x-rapidapi-key': '80d6e6da3dmsh6ef87e458499d63p1322b1jsn4b89906e9d22'
+      }
+    }).then(function (response) {
+      // cb2(response.data[0].translations[0].text);
+      let derived = {};
+      response?.data?.results.filter(res=>{
+        return res?.derivation?true:false
+      }).map(res=>{
+        return res.derivation.map(w=>{
+          getMeaning(w,m=>{
+            getTranslation(w,t=>{
+              m[0].hindi = t
+              derived[w] = m;
+              // debugger
+              setDerivations({...derivations,[single]:derived})
+            })
+            
+          });
+        })
+      });
+      setDerivations({...derivations,[single]:derived})
+      console.log(response);
+    });
+  };
+  const getResults = () => {
+    let words = word.split(",");
+    let results = {},
+      translations = {};
+    words.map((single) => {
+      if (!results[single]) {
+        results[single] = [];
+        callApi(
+          single,
+          (result) => {
+            results = { ...results, [single]: result };
+            setResults({ ...results });
+          },
+          (tr) => {
+            translations = { ...translations, [single]: tr };
+            setTranslation({ ...translations });
           }
         );
-        axios({
-          baseURL: endpoint,
-          url: '/translate',
-          method: 'post',
-          headers: {
-              'Ocp-Apim-Subscription-Key': subscriptionKey,
-              'Ocp-Apim-Subscription-Region': location,
-              'Content-type': 'application/json',
-              'X-ClientTraceId': uuidv4().toString()
-          },
-          params: {
-              'api-version': '3.0',
-              'from': 'en',
-              'to': ['hi']
-          },
-          data: [{
-              'text': single
-          }],
-          responseType: 'json'
-        }).then(function(response){
-          cb2(response.data[0].translations[0].text);
-            console.log(response.data,response.data[0].translations[0].text);
-        })
-  }
-  const getResults = () => {
-    let words = word.split(',');
-    let results = {},translations = {};
-    words.map(single=>{
-      if(!results[single]){
-        results[single] = [];
-        callApi(single,(result)=>{
-          results = {...results,[single]:result}
-          setResults({...results});
-        },
-        (tr)=>{
-          translations[single] = tr;
-          setTranslation(translations)
-        })
-        
       }
-    })
-    setResults({...results});
+    });
+    setTranslation({ ...translations });
+    setResults({ ...results });
   };
   return (
     <div className={styles.container}>
@@ -76,7 +123,12 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Welcome to Word Dictionary!</h1>
-        <form onSubmit={(e)=>{e.preventDefault();getResults(e)}}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            getResults(e);
+          }}
+        >
           <input
             onChange={(e) => {
               setWord(e.target.value);
@@ -85,37 +137,85 @@ export default function Home() {
             value={word}
             placeholder="type here"
           />
-          <button type="submit" >Search</button>
+          <button type="submit">Search</button>
         </form>
         <h3>Result:</h3>
-        <div style={{maxWidth:'900px'}}>
-          {Object.keys(results).map((r,i) => {
+        <div style={{ maxWidth: "900px" }}>
+          {Object.keys(results).map((r, i) => {
             let res = results[r][0];
-            let word = r
-            // debugger
+            let word = r;
             return (
-              <><div key={i} style={{display:'flex'}}>
-                <div style={{padding:'0 50px',minWidth:'200px'}}>
-                  <div style={{textTransform:'uppercase'}}><b>{word}</b></div>
-                  <div>{translations[word]}</div>
-                </div>
-                <div>{res?.meanings.map((meaning,i) => {
-                  return (
-                    <div key={`results${i}`}>
-                      ({meaning.partOfSpeech}) &nbsp;                
-                      <span>{meaning.definitions[0].definition}</span><br/>
-                      <em><small>example: {meaning.definitions[0].example}</small></em><br/>
-                      {meaning.definitions[0].synonyms.length ? <><em><small>synonyms: {meaning.definitions[0].synonyms.slice(0,8).join(',')}</small></em><br/></>:null}
-                      {meaning.definitions[0].antonyms.length ? <><em><small>antonyms: {meaning.definitions[0].antonyms.slice(0,8).join(',')}</small></em><br/></>:null}
-                      <br/>
+              <>
+                <div>
+                  {res?.meanings.map((meaning, i) => {
+                    return (
+                      <><div style={{ padding: "0 50px", minWidth: "200px" }}>
+                        <div>
+                          <b style={{ textTransform: "capitalize" }}>{word}</b> ({meaning.partOfSpeech}) - 
+                          &nbsp;<span>{meaning.definitions[0].definition}</span>
+                          &nbsp; / <span>{translations[word]}</span>
+                          <br /><br />
+                        </div>
+                        
+                      </div>
+                      <div key={i} style={{ display: "flex" }}>
+                      <div style={{ padding: "0 50px", minWidth: "245px" }}></div>
+                            <div key={`results${i}`}>
+                              
+                              {/* <em> */}
+                                <small>
+                                  Sentence - {meaning.definitions[0].example}
+                                </small>
+                              {/* </em> */}
+                              <br />
+                              {meaning.definitions[0].synonyms.length ? (
+                                <>
+                                  {/* <em> */}
+                                    <small>
+                                      Syn -{" "}
+                                      {meaning.definitions[0].synonyms
+                                        .slice(0, 8)
+                                        .join(", ")}
+                                    </small>
+                                  {/* </em> */}
+                                  <br />
+                                </>
+                              ) : null}
+                              {meaning.definitions[0].antonyms.length ? (
+                                <>
+                                  {/* <em> */}
+                                    <small>
+                                      Ant -{" "}
+                                      {meaning.definitions[0].antonyms
+                                        .slice(0, 8)
+                                        .join(", ")}
+                                    </small>
+                                  {/* </em> */}
+                                  <br />
+                                </>
+                              ) : null}
+                              <>
+                                  {/* <em> */}
+                                    <small>
+                                    Derived -{" "}
+                                      {derivations[word] ? Object.keys(derivations[word]).map(dmean=>{
+                                        return <><span>{dmean} ({derivations[word][dmean][0]?.meanings[0].partOfSpeech}) - {derivations[word][dmean][0]?.meanings[0].definitions[0].definition} / {derivations[word][dmean][0].hindi}</span><br/></>
+                                      }):null}
+                                    </small>
+                                  {/* </em> */}
+                                  <br />
+                                </>
+                              <br />
+                            </div>
+                          
                     </div>
-                  );
-                })}
+                    <br />
+                    <br /></>
+                    );
+                  })}
                 </div>
-              </div>
-              <br/>
-              <br/>
-              <br/>
+                
+                <br />
               </>
             );
           })}
