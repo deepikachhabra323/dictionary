@@ -16,7 +16,7 @@ export default function Home() {
   let [derivations, setDerivations] = useState({});
   let [translations, setTranslation] = useState({});
 
-  const getMeaning = (single,cb) => {
+  const getMeaning = (single, cb) => {
     //for meaning
     fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${single}`).then(
       async (res) => {
@@ -26,9 +26,9 @@ export default function Home() {
         cb(result);
       }
     );
-  }
+  };
 
-  const getTranslation = (single,cb2) => {
+  const getTranslation = (single, cb2) => {
     //for translation
     axios({
       baseURL: endpoint,
@@ -55,38 +55,38 @@ export default function Home() {
       cb2(response.data[0].translations[0].text);
       console.log(response.data, response.data[0].translations[0].text);
     });
-  }
+  };
   const callApi = (single, cb, cb2) => {
-    
-    getMeaning(single,cb)
-    getTranslation(single,cb2)
+    getMeaning(single, cb);
+    getTranslation(single, cb2);
     //for derivatives
     axios({
-      method: 'GET',
+      method: "GET",
       url: `https://wordsapiv1.p.rapidapi.com/words/${single}`,
       headers: {
-        'x-rapidapi-host': 'wordsapiv1.p.rapidapi.com',
-        'x-rapidapi-key': '80d6e6da3dmsh6ef87e458499d63p1322b1jsn4b89906e9d22'
-      }
+        "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+        "x-rapidapi-key": "80d6e6da3dmsh6ef87e458499d63p1322b1jsn4b89906e9d22",
+      },
     }).then(function (response) {
       // cb2(response.data[0].translations[0].text);
       let derived = {};
-      response?.data?.results.filter(res=>{
-        return res?.derivation?true:false
-      }).map(res=>{
-        return res.derivation.map(w=>{
-          getMeaning(w,m=>{
-            getTranslation(w,t=>{
-              m[0].hindi = t
-              derived[w] = m;
-              // debugger
-              setDerivations({...derivations,[single]:derived})
-            })
-            
-          });
+      response?.data?.results
+        .filter((res) => {
+          return res?.derivation ? true : false;
         })
-      });
-      setDerivations({...derivations,[single]:derived})
+        .map((res) => {
+          return res.derivation.map((w) => {
+            getMeaning(w, (m) => {
+              getTranslation(w, (t) => {
+                m[0].hindi = t;
+                derived[w] = m;
+                // debugger
+                setDerivations({ ...derivations, [single]: derived });
+              });
+            });
+          });
+        });
+      setDerivations({ ...derivations, [single]: derived });
       console.log(response);
     });
   };
@@ -149,72 +149,106 @@ export default function Home() {
                 <div>
                   {res?.meanings.map((meaning, i) => {
                     return (
-                      <><div style={{ padding: "0 50px", minWidth: "200px" }}>
-                        <div>
-                          <b style={{ textTransform: "capitalize" }}>{word}</b> ({meaning.partOfSpeech}) - 
-                          &nbsp;<span>{meaning.definitions[0].definition}</span>
-                          &nbsp; / <span>{translations[word]}</span>
-                          <br /><br />
+                      <>
+                        <div style={{ padding: "0 50px", minWidth: "200px" }}>
+                          <div>
+                            <b style={{ textTransform: "capitalize" }}>
+                              {word}
+                            </b>{" "}
+                            ({meaning.partOfSpeech}) - &nbsp;
+                            <span>{meaning.definitions[0].definition}</span>
+                            &nbsp; / <span>{translations[word]}</span>
+                            <br />
+                            <br />
+                          </div>
                         </div>
-                        
-                      </div>
-                      <div key={i} style={{ display: "flex" }}>
-                      <div style={{ padding: "0 50px", minWidth: "245px" }}></div>
-                            <div key={`results${i}`}>
-                              
+                        <div key={i} style={{ display: "flex" }}>
+                          <div
+                            style={{ padding: "0 50px", minWidth: "245px" }}
+                          ></div>
+                          <div key={`results${i}`}>
+                            {/* <em> */}
+                            <small>
+                              Sentence - {meaning.definitions[0].example}
+                            </small>
+                            {/* </em> */}
+                            <br />
+
+                            <>
                               {/* <em> */}
-                                <small>
-                                  Sentence - {meaning.definitions[0].example}
-                                </small>
+                              <small>
+                                Syn -{" "}
+                                {meaning.definitions[0].synonyms.length
+                                  ? meaning.definitions[0].synonyms
+                                      .slice(0, 8)
+                                      .join(", ")
+                                  : null}
+                              </small>
                               {/* </em> */}
                               <br />
-                              {meaning.definitions[0].synonyms.length ? (
-                                <>
-                                  {/* <em> */}
-                                    <small>
-                                      Syn -{" "}
-                                      {meaning.definitions[0].synonyms
-                                        .slice(0, 8)
-                                        .join(", ")}
-                                    </small>
-                                  {/* </em> */}
-                                  <br />
-                                </>
-                              ) : null}
-                              {meaning.definitions[0].antonyms.length ? (
-                                <>
-                                  {/* <em> */}
-                                    <small>
-                                      Ant -{" "}
-                                      {meaning.definitions[0].antonyms
-                                        .slice(0, 8)
-                                        .join(", ")}
-                                    </small>
-                                  {/* </em> */}
-                                  <br />
-                                </>
-                              ) : null}
-                              <>
-                                  {/* <em> */}
-                                    <small>
-                                    Derived -{" "}
-                                      {derivations[word] ? Object.keys(derivations[word]).map(dmean=>{
-                                        return <><span>{dmean} ({derivations[word][dmean][0]?.meanings[0].partOfSpeech}) - {derivations[word][dmean][0]?.meanings[0].definitions[0].definition} / {derivations[word][dmean][0].hindi}</span><br/></>
-                                      }):null}
-                                    </small>
-                                  {/* </em> */}
-                                  <br />
-                                </>
+                            </>
+
+                            <>
+                              {/* <em> */}
+                              <small>
+                                Ant -{" "}
+                                {meaning.definitions[0].antonyms.length
+                                  ? meaning.definitions[0].antonyms
+                                      .slice(0, 8)
+                                      .join(", ")
+                                  : null}
+                              </small>
+                              {/* </em> */}
                               <br />
-                            </div>
-                          
-                    </div>
-                    <br />
-                    <br /></>
+                            </>
+
+                            <>
+                              {/* <em> */}
+                              <small>
+                                Derived -{" "}
+                                {derivations[word]
+                                  ? Object.keys(derivations[word]).map(
+                                      (dmean) => {
+                                        return (
+                                          <>
+                                            <span>
+                                              {dmean} (
+                                              {
+                                                derivations[word][dmean][0]
+                                                  ?.meanings[0].partOfSpeech
+                                              }
+                                              ) -{" "}
+                                              {
+                                                derivations[word][dmean][0]
+                                                  ?.meanings[0].definitions[0]
+                                                  .definition
+                                              }{" "}
+                                              /{" "}
+                                              {
+                                                derivations[word][dmean][0]
+                                                  .hindi
+                                              }
+                                            </span>
+                                            <br />
+                                          </>
+                                        );
+                                      }
+                                    )
+                                  : null}
+                              </small>
+                              {/* </em> */}
+                              <br />
+                            </>
+                            <br />
+                          </div>
+                        </div>
+                        <br />
+                        <br />
+                      </>
                     );
                   })}
                 </div>
-                
+
                 <br />
               </>
             );
