@@ -97,8 +97,8 @@ export default function Home() {
             <div key={`example${i}`}>
               <h4>{word}</h4>
               <div>
-                {examples[word].map((e) => {
-                  return <span>{1+i}. {e}<br/></span>;
+                {examples[word].map((e,index) => {
+                  return <span key={`ex${index}`}>{1+i}. {e}<br/></span>;
                 })}
               </div>
             </div>
