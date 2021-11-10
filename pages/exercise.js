@@ -1,7 +1,8 @@
 import Head from "next/head";
 import { useState } from "react";
+import Link from 'next/link';
 import styles from "../styles/Home.module.css";
-const { v4: uuidv4 } = require("uuid");
+// const { v4: uuidv4 } = require("uuid");
 const axios = require("axios").default;
 
 var subscriptionKey = "bf400f67a2364b5f8a289cdc4c39ee40";
@@ -65,10 +66,10 @@ export default function Home() {
       </Head>
       <nav>
         <span style={{padding:'15px',color:'blue',display:'inline-block'}}>
-          <a href="/">Dictionary</a>
+          <Link href="/">Dictionary</Link>
         </span>
         <span style={{padding:'15px',color:'blue',display:'inline-block'}}>
-          <a href="/exercise">Exercise</a>
+          <Link href="/exercise">Exercise</Link>
         </span>
       </nav>
       <main className={styles.main} style={{alignItems:'normal',maxWidth:'800px',margin:'auto'}}>
