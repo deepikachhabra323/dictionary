@@ -155,7 +155,7 @@ export default function Home() {
             return (
               <>
                 <div>
-                  {res?.meanings.map((meaning, i) => {
+                  {[res?.meanings[0]].map((meaning, i) => {
                     return (
                       <>
                         <div style={{ padding: "0 50px", minWidth: "200px" }}>
@@ -164,8 +164,8 @@ export default function Home() {
                               {word}
                             </b>{" "}
                             ({meaning.partOfSpeech}) - &nbsp;
-                            <span>{meaning.definitions[0].definition}</span>
-                            &nbsp; / <span>{translations[word]}</span>
+                            {/* <span>{meaning.definitions[0].definition}</span>
+                            &nbsp; / <span>{translations[word]}</span> */}
                             <br />
                             <br />
                           </div>
@@ -177,7 +177,14 @@ export default function Home() {
                           <div key={`results${i}`}>
                             {/* <em> */}
                             <small>
-                              Sentence - {meaning.definitions[0].example}
+                              Key - 
+                            </small><br />
+                            <small>
+                              Story - 
+                            </small><br />
+                            <small>
+                              Sentence - 
+                              {/* {meaning.definitions[0].example} */}
                             </small>
                             {/* </em> */}
                             <br />
@@ -213,7 +220,7 @@ export default function Home() {
                             <>
                               {/* <em> */}
                               <small>
-                                Derived -{" "}
+                                <b>Derived</b> -{" "}
                                 {derivations[word]
                                   ? Object.keys(derivations[word]).map(
                                       (dmean) => {
