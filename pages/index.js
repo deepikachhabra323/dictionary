@@ -155,7 +155,7 @@ export default function Home() {
             return (
               <>
                 <div>
-                  {[res?.meanings[0]].map((meaning, i) => {
+                  {res?.meanings[0] && [res?.meanings[0]].map((meaning, i) => {
                     return (
                       <>
                         <div style={{ padding: "0 50px", minWidth: "200px" }}>
@@ -163,7 +163,7 @@ export default function Home() {
                             <b style={{ textTransform: "capitalize" }}>
                               {word}
                             </b>{" "}
-                            ({meaning.partOfSpeech}) - &nbsp;
+                            ({meaning?.partOfSpeech}) - &nbsp;
                             {/* <span>{meaning.definitions[0].definition}</span>
                             &nbsp; / <span>{translations[word]}</span> */}
                             <br />
